@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>認定こども園 年間収入シミュレーション</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .dashboard {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        .header h1 {
+            color: #2c3e50;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+        
+        .controls-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .control-group {
+            background: linear-gradient(145deg, #f8f9fa, #e9ecef);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .control-group:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+        
+        .control-group h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .control-group h3::before {
+            content: '👶';
+            font-size: 1.5rem;
+        }
+        
+        .control-group:nth-child(2) h3::before { content: '🏫'; }
+        .control-group:nth-child(3) h3::before { content: '💰'; }
+        .control-group:nth-child(4) h3::before { content: '📊'; }
+        
+        .input-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .input-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        
+        .input-row label {
+            font-weight: 600;
+            color: #34495e;
+            flex: 1;
+        }
+        
+        .input-row input {
+            width: 80px;
+            padding: 8px 12px;
+            border: 2px solid #bdc3c7;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .input-row input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+        }
+        
+        .results-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .result-card {
+            background: linear-gradient(145deg, #ffffff, #f1f3f4);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .result-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+        
+        .result-card h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+        }
+        
+        .amount {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #27ae60;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .amount-label {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+        
+        .breakdown-section {
+            background: linear-gradient(145deg, #ffffff, #f8f9fa);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .breakdown-section h3 {
+            color: #2c3e50;
+            margin-bottom: 25px;
+            font-size: 1.5rem;
+            text-align: center;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #667eea;
+        }
+        
+        .breakdown-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .breakdown-item {
+            background: rgba(102, 126, 234, 0.1);
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 5px solid #667eea;
+            transition: all 0.3s ease;
+        }
+        
+        .breakdown-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .breakdown-item h4 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .breakdown-item .value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #27ae60;
+        }
+        
+        .chart-section {
+            background: linear-gradient(145deg, #ffffff, #f8f9fa);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .chart-section h3 {
+            color: #2c3e50;
+            margin-bottom: 25px;
+            font-size: 1.5rem;
+            text-align: center;
+        }
+        
+        .chart-container {
+            height: 300px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px dashed #bdc3c7;
+        }
+        
+        .chart-placeholder {
+            color: #7f8c8d;
+            font-size: 1.2rem;
+            text-align: center;
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .controls-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .results-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .amount {
+                font-size: 2rem;
+            }
+        }
+        
+        .update-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+            margin: 20px auto;
+            display: block;
+        }
+        
+        .update-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <div class="header">
+            <h1>認定こども園 年間収入シミュレーション</h1>
+            <p>園児数と単価を入力して年間収入を予測・分析</p>
+        </div>
+        
+        <div class="controls-section">
+            <div class="control-group">
+                <h3>園児数設定</h3>
+                <div class="input-row">
+                    <label>1号認定（3歳）</label>
+                    <input type="number" id="type1-age3" value="15" min="0">
+                </div>
+                <div class="input-row">
+                    <label>1号認定（4歳）</label>
+                    <input type="number" id="type1-age4" value="18" min="0">
+                </div>
+                <div class="input-row">
+                    <label>1号認定（5歳）</label>
+                    <input type="number" id="type1-age5" value="20" min="0">
+                </div>
+                <div class="input-row">
+                    <label>2・3号認定（0歳）</label>
+                    <input type="number" id="type23-age0" value="8" min="0">
+                </div>
+                <div class="input-row">
+                    <label>2・3号認定（1歳）</label>
+                    <input type="number" id="type23-age1" value="12" min="0">
+                </div>
+                <div class="input-row">
+                    <label>2・3号認定（2歳）</label>
+                    <input type="number" id="type23-age2" value="15" min="0">
+                </div>
+                <div class="input-row">
+                    <label>2・3号認定（3歳）</label>
+                    <input type="number" id="type23-age3" value="18" min="0">
+                </div>
+                <div class="input-row">
+                    <label>2・3号認定（4歳）</label>
+                    <input type="number" id="type23-age4" value="20" min="0">
+                </div>
+                <div class="input-row">
+                    <label>2・3号認定（5歳）</label>
+                    <input type="number" id="type23-age5" value="22" min="0">
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <h3>公定価格（月額）</h3>
+                <div class="input-row">
+                    <label>1号認定基本額</label>
+                    <input type="number" id="price1-basic" value="11690" min="0">
+                </div>
+                <div class="input-row">
+                    <label>2・3号（0歳）</label>
+                    <input type="number" id="price23-age0" value="101360" min="0">
+                </div>
+                <div class="input-row">
+                    <label>2・3号（1・2歳）</label>
+                    <input type="number" id="price23-age12" value="101360" min="0">
+                </div>
+                <div class="input-row">
+                    <label>2・3号（3歳以上）</label>
+                    <input type="number" id="price23-age3up" value="26850" min="0">
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <h3>追加収入</h3>
+                <div class="input-row">
+                    <label>預かり保育料（月額）</label>
+                    <input type="number" id="extended-care" value="150000" min="0">
+                </div>
+                <div class="input-row">
+                    <label>給食費（月額）</label>
+                    <input type="number" id="meal-fee" value="300000" min="0">
+                </div>
+                <div class="input-row">
+                    <label>その他収入（月額）</label>
+                    <input type="number" id="other-income" value="50000" min="0">
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <h3>調整項目</h3>
+                <div class="input-row">
+                    <label>処遇改善等加算率</label>
+                    <input type="number" id="improvement-rate" value="12" min="0" max="100" step="0.1">
+                    <span style="margin-left: 5px;">%</span>
+                </div>
+                <div class="input-row">
+                    <label>地域区分補正</label>
+                    <input type="number" id="area-correction" value="1.0" min="0" max="2" step="0.01">
+                </div>
+                <div class="input-row">
+                    <label>月変動率</label>
+                    <input type="number" id="monthly-variation" value="0" min="-20" max="20" step="0.1">
+                    <span style="margin-left: 5px;">%</span>
+                </div>
+            </div>
+        </div>
+        
+        <button class="update-btn" onclick="calculateRevenue()">💡 収入を再計算</button>
+        
+        <div class="results-section">
+            <div class="result-card">
+                <h3>📊 年間総収入予測</h3>
+                <div class="amount" id="total-revenue">¥0</div>
+                <div class="amount-label">年間合計</div>
+            </div>
+            <div class="result-card">
+                <h3>📈 月平均収入</h3>
+                <div class="amount" id="monthly-average" style="color: #3498db;">¥0</div>
+                <div class="amount-label">月平均</div>
+            </div>
+        </div>
+        
+        <div class="breakdown-section">
+            <h3>💰 収入内訳詳細</h3>
+            <div class="breakdown-grid">
+                <div class="breakdown-item">
+                    <h4>1号認定収入</h4>
+                    <div class="value" id="type1-revenue">¥0</div>
+                </div>
+                <div class="breakdown-item">
+                    <h4>2・3号認定収入</h4>
+                    <div class="value" id="type23-revenue">¥0</div>
+                </div>
+                <div class="breakdown-item">
+                    <h4>預かり保育収入</h4>
+                    <div class="value" id="extended-revenue">¥0</div>
+                </div>
+                <div class="breakdown-item">
+                    <h4>給食費収入</h4>
+                    <div class="value" id="meal-revenue">¥0</div>
+                </div>
+                <div class="breakdown-item">
+                    <h4>処遇改善等加算</h4>
+                    <div class="value" id="improvement-revenue">¥0</div>
+                </div>
+                <div class="breakdown-item">
+                    <h4>その他収入</h4>
+                    <div class="value" id="other-revenue">¥0</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chart-section">
+            <h3>📊 月別収入推移予測</h3>
+            <div class="chart-container">
+                <div class="chart-placeholder">
+                    📈 月別収入グラフ<br>
+                    <small>（実際のExcelでは、ここにグラフが表示されます）</small><br>
+                    <small>季節変動や園児数変化を反映した月別推移</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('ja-JP', {
+                style: 'currency',
+                currency: 'JPY',
+                minimumFractionDigits: 0
+            }).format(amount);
+        }
+        
+        function calculateRevenue() {
+            // 園児数取得
+            const type1Age3 = parseInt(document.getElementById('type1-age3').value) || 0;
+            const type1Age4 = parseInt(document.getElementById('type1-age4').value) || 0;
+            const type1Age5 = parseInt(document.getElementById('type1-age5').value) || 0;
+            
+            const type23Age0 = parseInt(document.getElementById('type23-age0').value) || 0;
+            const type23Age1 = parseInt(document.getElementById('type23-age1').value) || 0;
+            const type23Age2 = parseInt(document.getElementById('type23-age2').value) || 0;
+            const type23Age3 = parseInt(document.getElementById('type23-age3').value) || 0;
+            const type23Age4 = parseInt(document.getElementById('type23-age4').value) || 0;
+            const type23Age5 = parseInt(document.getElementById('type23-age5').value) || 0;
+            
+            // 単価取得
+            const price1Basic = parseInt(document.getElementById('price1-basic').value) || 0;
+            const price23Age0 = parseInt(document.getElementById('price23-age0').value) || 0;
+            const price23Age12 = parseInt(document.getElementById('price23-age12').value) || 0;
+            const price23Age3up = parseInt(document.getElementById('price23-age3up').value) || 0;
+            
+            // 追加収入
+            const extendedCare = parseInt(document.getElementById('extended-care').value) || 0;
+            const mealFee = parseInt(document.getElementById('meal-fee').value) || 0;
+            const otherIncome = parseInt(document.getElementById('other-income').value) || 0;
+            
+            // 調整項目
+            const improvementRate = parseFloat(document.getElementById('improvement-rate').value) || 0;
+            const areaCorrection = parseFloat(document.getElementById('area-correction').value) || 1.0;
+            const monthlyVariation = parseFloat(document.getElementById('monthly-variation').value) || 0;
+            
+            // 月額収入計算
+            const type1Monthly = (type1Age3 + type1Age4 + type1Age5) * price1Basic;
+            const type23Monthly = (type23Age0 * price23Age0) + 
+                                 ((type23Age1 + type23Age2) * price23Age12) +
+                                 ((type23Age3 + type23Age4 + type23Age5) * price23Age3up);
+            
+            const basicMonthly = (type1Monthly + type23Monthly) * areaCorrection;
+            const improvementMonthly = basicMonthly * (improvementRate / 100);
+            const extendedMonthly = extendedCare;
+            const mealMonthly = mealFee;
+            const otherMonthly = otherIncome;
+            
+            const totalMonthly = basicMonthly + improvementMonthly + extendedMonthly + mealMonthly + otherMonthly;
+            const totalAnnual = totalMonthly * 12 * (1 + monthlyVariation / 100);
+            
+            // 結果表示
+            document.getElementById('total-revenue').textContent = formatCurrency(totalAnnual);
+            document.getElementById('monthly-average').textContent = formatCurrency(totalAnnual / 12);
+            
+            document.getElementById('type1-revenue').textContent = formatCurrency(type1Monthly * 12);
+            document.getElementById('type23-revenue').textContent = formatCurrency(type23Monthly * areaCorrection * 12);
+            document.getElementById('extended-revenue').textContent = formatCurrency(extendedMonthly * 12);
+            document.getElementById('meal-revenue').textContent = formatCurrency(mealMonthly * 12);
+            document.getElementById('improvement-revenue').textContent = formatCurrency(improvementMonthly * 12);
+            document.getElementById('other-revenue').textContent = formatCurrency(otherMonthly * 12);
+        }
+        
+        // 初期計算実行
+        calculateRevenue();
+        
+        // 入力変更時の自動計算
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('input', calculateRevenue);
+        });
+    </script>
+</body>
+</html>
